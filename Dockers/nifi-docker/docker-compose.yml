@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  zookeeper2:
+    hostname: zookeeper2
+    container_name: zookeeper2
+    image: pfmuah/kafka-zookeeper:2.12_2.5.0-java8
+    environment:
+     - ALLOW_ANONYMOUS_LOGIN=yes
+  nifi:
+    image: pfmuah/nifi-base:1.9.2-java8
+    container_name: nifi
+    hostname: nifi
+    restart: "no"
+    restart: always
+    restart: on-failure
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+      - "9443:9443"
+      - "10443:10443"
+      - "11443:11443"
+      - "6342:6342"
+    environment:
+      - NIFI_WEB_HTTP_PORT=9999
+      - NIFI_CLUSTER_IS_NODE=true
+      - NIFI_CLUSTER_NODE_PROTOCOL_PORT=8082
+      - NIFI_ZK_CONNECT_STRING=zookeeper2:2181
+      - NIFI_ELECTION_MAX_WAIT=1 min
+    volumes:
+      - /opt/docker_volumes/nifi/logs:/opt/nifi/nifi-current/logs
+      - /opt/docker_volumes/nifi/database_repository:/opt/nifi/nifi-current/database_repository
+      - /opt/docker_volumes/nifi/flowfile_repository:/opt/nifi/nifi-current/flowfile_repository
+      - /opt/docker_volumes/nifi/content_repository:/opt/nifi/nifi-current/content_repository
+      - /opt/docker_volumes/nifi/provenance_repository:/opt/nifi/nifi-current/provenance_repository
+      - /opt/docker_volumes/nifi/state:/opt/nifi/nifi-current/state
+
+networks:
+  default:
+    external:
+      name: test-net
